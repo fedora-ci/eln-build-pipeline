@@ -3,20 +3,19 @@
 @Library('fedora-pipeline-library@prototype') _
 
 def pipelineMetadata = [
-    pipelineName: 'rpmdeplint',
-    pipelineDescription: 'Finding errors in RPM packages in the context of their dependency graph',
-    testCategory: 'functional',
-    testType: 'rpmdeplint',
+    pipelineName: 'eln-build',
+    pipelineDescription: 'Rebuild Fedora Rawhide package in the ELN Buildroot',
+    testCategory: 'eln',
+    testType: 'build',
     maintainer: 'Fedora CI',
-    docs: 'https://github.com/fedora-ci/rpmdeplint-pipeline',
+    docs: 'https://github.com/fedora-ci/eln-build-pipeline',
     contact: [
         irc: '#fedora-ci',
         email: 'ci@lists.fedoraproject.org'
     ],
 ]
-def artifactId
-def testingFarmResult
 
+def artifactId
 
 pipeline {
 
@@ -25,7 +24,7 @@ pipeline {
     }
 
     agent {
-        label 'fedora-ci-agent'
+        label 'fedora-ci-runner'
     }
 
     parameters {
@@ -44,36 +43,13 @@ pipeline {
                     }
                 }
                 setBuildNameFromArtifactId(artifactId: artifactId)
-                sendMessage(type: 'queued', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
+//                sendMessage(type: 'queued', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
             }
         }
 
         stage('Test') {
             steps {
-                sendMessage(type: 'running', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
-
-                script {
-                    def requestPayload = """
-                        {
-                            "api_key": "xxx",
-                            "test": {
-                                "fmf": {
-                                    "url": "${getGitUrl()}",
-                                    "ref": "${getGitRef()}",
-                                }
-                            }
-                            "environments": {
-                                "variables": {
-                                    "RELEASE_ID": "${getReleaseIdFromBranch()}",
-                                    "TASK_ID": "${artifactId.split(':')[1]}"
-                                }
-                            }
-                        }
-                    """
-                    // def response = submitTestingFarmRequest(payload: requestPayload)
-                    // testingFarmResult = waitForTestingFarmResults(requestId: response['id'], timeout: 30)
-
-                    // evaluateTestingFarmResults(testingFarmResult)
+		sh 'koji list-targets --name=eln'
                 }
             }
         }
@@ -81,21 +57,19 @@ pipeline {
 
     post {
         always {
-            echo 'No Testing Farm, nothing to archive.'
+            echo 'Job completed'
         }
         success {
             sendMessage(type: 'complete', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
-        }
-        failure {
-            sendMessage(type: 'error', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
-            echo """
-*******************************************************************************************************************
-Testing Farm is not up and running yet so this test will always fail. You can safely ignore it now. But stay tuned!
-*******************************************************************************************************************
-            """
+	    echo 'Passed'
         }
         unstable {
             sendMessage(type: 'complete', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
+	    echo 'Passed'
+        }
+        failure {
+            sendMessage(type: 'error', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
+            echo 'Failed'
         }
     }
 }
