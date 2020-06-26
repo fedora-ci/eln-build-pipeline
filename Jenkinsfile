@@ -43,14 +43,12 @@ pipeline {
                     }
                 }
                 setBuildNameFromArtifactId(artifactId: artifactId)
-//                sendMessage(type: 'queued', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
             }
         }
 
         stage('Test') {
             steps {
 		sh 'koji list-targets --name=eln'
-                }
             }
         }
     }
@@ -58,18 +56,6 @@ pipeline {
     post {
         always {
             echo 'Job completed'
-        }
-        success {
-            sendMessage(type: 'complete', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
-	    echo 'Passed'
-        }
-        unstable {
-            sendMessage(type: 'complete', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
-	    echo 'Passed'
-        }
-        failure {
-            sendMessage(type: 'error', artifactId: artifactId, pipelineMetadata: pipelineMetadata, dryRun: isPullRequest())
-            echo 'Failed'
         }
     }
 }
