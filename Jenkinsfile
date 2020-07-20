@@ -32,7 +32,6 @@ pipeline {
     }
 
     agent {
-        label 'fedora-ci-'.concat(pipelineMetadata.pipelineName)
 	kubernetes {
 	    yaml podYAML
 	}
