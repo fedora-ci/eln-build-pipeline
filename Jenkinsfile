@@ -67,11 +67,14 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-		sh 'koji list-targets --name=eln'
-            }
+	stage('Test') {
+	    steps {
+		container('koji') {
+		    sh 'koji list-targets --name=eln'
+		}
+	    }
         }
+	
     }
 
     post {
