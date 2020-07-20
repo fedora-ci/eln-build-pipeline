@@ -7,6 +7,7 @@ spec:
   containers:
   - name: koji
     image: quay.io/bookwar/koji-client:0.0.1
+    tty: true
 """
 
 def pipelineMetadata = [
