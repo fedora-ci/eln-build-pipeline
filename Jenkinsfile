@@ -35,6 +35,7 @@ pipeline {
     agent {
 	kubernetes {
 	    yaml podYAML
+	    defaultContainer 'koji'
 	}
     }
 
@@ -69,9 +70,7 @@ pipeline {
 
 	stage('Test') {
 	    steps {
-		container('koji') {
-		    sh 'koji list-targets --name=eln'
-		}
+		sh 'koji list-targets --name=eln'
 	    }
         }
 	
