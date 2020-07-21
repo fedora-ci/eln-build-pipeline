@@ -70,7 +70,11 @@ pipeline {
 
 	stage('Test') {
 	    steps {
-		sh 'koji list-targets --name=eln'
+		withCredentials(
+		    [file(credentialsId: 'fedora-keytab', variable: 'KOJI_KEYTAB')]
+		) {
+		    sh './eln-rebuild.py -w -v -b $ARTIFACT_ID'
+		}
 	    }
         }
 	
