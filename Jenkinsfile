@@ -41,39 +41,20 @@ pipeline {
 
     parameters {
         string(
-	    name: 'ARTIFACT_ID',
+	    name: 'KOJI_BUILD_ID',
 	    defaultValue: null,
 	    trim: true,
-	    description: '"koji-build:<taskId>" for Koji builds; Example: koji-build:42376994'
-	)
-	string(
-	    name: 'ADDITIONAL_ARTIFACT_IDS',
-	    defaultValue: null,
-	    trim: true,
-	    description: 'A comma-separated list of additional ARTIFACT_IDs'
+	    description: 'Koji build id. Example: 1234547'
 	)
     }
 
     stages {
-        stage('Prepare') {
-            steps {
-                script {
-                    artifactId = params.ARTIFACT_ID
-
-                    if (!artifactId) {
-                        abort('ARTIFACT_ID is missing')
-                    }
-                }
-                setBuildNameFromArtifactId(artifactId: artifactId)
-            }
-        }
-
-	stage('Test') {
+	stage('Rebuild') {
 	    steps {
 		withCredentials(
 		    [file(credentialsId: 'fedora-keytab', variable: 'KOJI_KEYTAB')]
 		) {
-		    sh './eln-rebuild.py -w -v -b $ARTIFACT_ID'
+		    sh './eln-rebuild.py -w -v -b $KOJI_BUILD_ID'
 		}
 	    }
         }
