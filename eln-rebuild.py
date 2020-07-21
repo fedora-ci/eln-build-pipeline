@@ -21,10 +21,12 @@ def rebuild_for_eln(build_id):
 
     if not builds_in_ELN:
         logging.info("Package {0} is not in ELN".format(package))
+        print("{0}: skipped".format(package))
         return None
 
     logging.info("Package {0} needs rebuilding".format(package))
     task_id = session.build(src=scm, target="eln", opts={'scratch': True})
+    print("{0}: {1}".format(task_id, package))
 
     return task_id
 
