@@ -50,21 +50,20 @@ pipeline {
 
     stages {
 	stage('Rebuild') {
-	    steps {
-		withCredentials(
-		    [file(credentialsId: 'fedora-keytab', variable: 'KOJI_KEYTAB')]
-		) {
-		    script {
-			currentBuild.description = params.KOJI_BUILD_ID
-                	output = sh (returnStdout: True) {
-			    './eln-rebuild.py -w -b $KOJI_BUILD_ID'
-			}
-			currentBuild.description = output.toString().trim()
-                    }
-		    
-		}
+	    environment {
+                KOJI_KEYTAB = credentials('fedora-keytab')
             }
 	    
+	    steps {
+		script {
+		    currentBuild.description = params.KOJI_BUILD_ID
+                    output = sh(
+			returnStdout: true,
+			script: './eln-rebuild.py -w -b $KOJI_BUILD_ID'
+		    )
+		    currentBuild.description = output.toString().trim()
+                }
+            }
 	}
     }
 
