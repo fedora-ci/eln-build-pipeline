@@ -1,10 +1,14 @@
 #!/usr/bin/python3
 
 import argparse
+import logging
 import os
+
+import sys
+from contextlib import redirect_stdout
+
 import koji
 from koji_cli.lib import watch_tasks
-import logging
 
 
 session = koji.ClientSession('https://koji.fedoraproject.org/kojihub')
@@ -57,4 +61,5 @@ if __name__ == "__main__":
     task_id = rebuild_for_eln(args.build_id)
 
     if task_id and args.wait:
-        watch_tasks(session, [task_id], poll_interval=10)
+        with redirect_stdout(sys.stderr):
+            watch_tasks(session, [task_id], poll_interval=10)
