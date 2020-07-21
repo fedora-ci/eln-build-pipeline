@@ -49,6 +49,8 @@ if __name__ == "__main__":
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     task_id = rebuild_for_eln(args.build_id)
 
