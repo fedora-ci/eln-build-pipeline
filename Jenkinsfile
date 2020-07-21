@@ -59,7 +59,7 @@ pipeline {
 		    currentBuild.description = params.KOJI_BUILD_ID
                     output = sh(
 			returnStdout: true,
-			script: './eln-rebuild.py -w -b $KOJI_BUILD_ID'
+			script: './eln-rebuild.py -w -s -b $KOJI_BUILD_ID'
 		    )
 		    currentBuild.description = output.toString().trim()
                 }
