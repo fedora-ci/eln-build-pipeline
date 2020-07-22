@@ -30,6 +30,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(daysToKeepStr: '180', artifactNumToKeepStr: '100'))
 	timeout(time: 4, unit: 'HOURS') 
+	throttle(['eln-build'])
     }
 
     agent {
