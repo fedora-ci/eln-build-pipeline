@@ -2,6 +2,8 @@
 
 @Library('fedora-pipeline-library@prototype') _
 
+import org.fedoraproject.jenkins.koji.Koji
+
 def podYAML = """
 spec:
   containers:
@@ -18,18 +20,19 @@ def pipelineMetadata = [
     maintainer: 'Fedora CI',
     docs: 'https://github.com/fedora-ci/eln-build-pipeline',
     contact: [
-        irc: '#fedora-ci',
-        email: 'ci@lists.fedoraproject.org'
+	irc: '#fedora-ci',
+	email: 'ci@lists.fedoraproject.org'
     ],
 ]
 
-def artifactId
+def buildDescriptionFile
+def kojiBuildId
 
 pipeline {
 
     options {
-        buildDiscarder(logRotator(daysToKeepStr: '180', artifactNumToKeepStr: '100'))
-	timeout(time: 4, unit: 'HOURS') 
+	buildDiscarder(logRotator(daysToKeepStr: '180', artifactNumToKeepStr: '100'))
+	timeout(time: 4, unit: 'HOURS')
 	throttle(['eln-build'])
     }
 
@@ -41,7 +44,7 @@ pipeline {
     }
 
     parameters {
-        string(
+	string(
 	    name: 'KOJI_BUILD_ID',
 	    defaultValue: null,
 	    trim: true,
@@ -50,27 +53,38 @@ pipeline {
     }
 
     stages {
-	stage('Rebuild') {
-	    environment {
-                KOJI_KEYTAB = credentials('fedora-keytab')
-            }
-	    
+	stage('Preparing input') {
 	    steps {
 		script {
-		    currentBuild.description = params.KOJI_BUILD_ID
-                    output = sh(
-			returnStdout: true,
-			script: './eln-rebuild.py -w -b $KOJI_BUILD_ID'
-		    )
-		    currentBuild.description = output.toString().trim()
-                }
-            }
+		    kojiBuildId = params.KOJI_BUILD_ID.toInteger()
+		    def koji = new Koji()
+		    build = koji.getBuildInfo(kojiBuildId)
+		    currentBuild.description = build.nvr
+
+		    buildDescriptionFile = 'output.txt'
+		}
+	    }
+	}
+	stage('Rebuild') {
+	    environment {
+		KOJI_KEYTAB = credentials('fedora-keytab')
+	    }
+
+	    steps {
+		sh "./eln-rebuild.py -w -b $kojiBuildId -o $buildDescriptionFile"
+	    }
 	}
     }
 
     post {
-        always {
-            echo 'Job completed'
-        }
+	always {
+	    script {
+		try {
+		    currentBuild.description = readFile(buildDescriptionFile)
+		} catch (Exception e) {
+		    echo e.toString()
+		}
+	    }
+	}
     }
 }
