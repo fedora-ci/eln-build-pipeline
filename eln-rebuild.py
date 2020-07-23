@@ -112,8 +112,8 @@ if __name__ == "__main__":
     task_id = rebuild_source(source, scratch=args.scratch)
 
     info_fmt = (
-        "{0}: {1}\n\n"
-        "https://koji.fedoraproject.org/koji/taskinfo?taskID={1}\n"
+        "{0}\n"
+        "https://koji.fedoraproject.org/koji/taskinfo?taskID={1}\n\n"
         "{2}\n"
         )
     logger.info(info_fmt.format(package, task_id, source))
