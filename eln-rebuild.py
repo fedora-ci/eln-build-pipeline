@@ -64,6 +64,9 @@ def rebuild_source(source, scratch=False):
     logger.debug("Rebuilding sources {0}".format(source))
 
     opts = {}
+
+    opts['fail_fast'] = True
+
     if scratch:
         opts['scratch'] = True
 
