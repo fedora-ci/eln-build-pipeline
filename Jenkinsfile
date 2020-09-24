@@ -54,6 +54,9 @@ pipeline {
 
     stages {
 	stage('Preparing input') {
+        options {
+            timeout(time: 20, unit: 'MINUTES')
+        }
 	    steps {
 		script {
 		    kojiBuildId = params.KOJI_BUILD_ID.toInteger()
@@ -66,6 +69,9 @@ pipeline {
 	    }
 	}
 	stage('Rebuild') {
+        options {
+            timeout(time: 3, unit: 'HOURS')
+        }
 	    environment {
 		KOJI_KEYTAB = credentials('fedora-keytab')
 	    }
