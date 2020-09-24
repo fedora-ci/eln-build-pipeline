@@ -1,0 +1,45 @@
+[BASIC]
+
+# Regular expression matching correct function names
+function-rgx=[a-z_][a-z0-9_]{2,50}$
+
+[MESSAGES CONTROL]
+
+disable=
+# "E" Error for important programming issues (likely bugs)
+# skip redefined function false positive
+ E0102,
+ no-member,
+ arguments-differ,
+# we can drop this when we drop py2.4 support
+ broad-except,
+ fixme,
+# we can discuss this if we find an easy alternative to the "globale" use
+ global-statement,
+ no-init,
+ protected-access,
+# "C" Coding convention violations
+ missing-docstring,
+# we can drop this when we drop py2.4 support
+ old-style-class,
+# "R" Refactor recommendations
+ too-few-public-methods,
+# do not warn about pylint checks being disabled through comments in the code
+ locally-disabled,
+# For some reason, pylint doesn't get right instance members, and some types could not be inferred
+# Eg: [E1103 maybe-no-member] Instance of 'RootLogger' has no 'task' member File: convert2rhel/main.py, line 60, in main
+# we have several logger task, and s good approach to disable here, instead of each line
+ maybe-no-member,
+# Disable these Refactor message since most of our tests use more then 20 public methods, and we are not refactor all
+# of our tests right now
+ too-many-public-methods,
+ too-many-branches,
+ too-many-instance-attributes,
+[REPORTS]
+
+msg-template='[{msg_id} {symbol}] {msg} File: {path}, line {line}, in {obj}'
+
+[FORMAT]
+
+# Maximum number of characters on a single line.
+max-line-length=120
