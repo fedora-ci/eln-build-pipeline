@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import requests
 
 import sys
 from contextlib import redirect_stdout
@@ -57,8 +58,8 @@ def configure_logging(verbose=False, output=None):
 
 
 def is_eln(package):
-    builds_in_ELN = session.listTagged("eln", package=package)
-    return bool(builds_in_ELN)
+    buildable_packagelist = requests.get("https://osci-jenkins-1.ci.fedoraproject.org/job/eln-periodic/lastSuccessfulBuild/artifact/buildable-eln-packages.txt", allow_redirects=True).text.splitlines()
+    return bool(package in buildable_packagelist)
 
 def rebuild_source(source, scratch=False):
     logger.debug("Rebuilding sources {0}".format(source))
