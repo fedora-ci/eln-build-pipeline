@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import requests
 
 import sys
 from contextlib import redirect_stdout
@@ -10,13 +11,13 @@ from contextlib import redirect_stdout
 import koji
 from koji_cli.lib import watch_tasks
 
+LAST_SUCCESSFUL_BULD = "https://osci-jenkins-1.ci.fedoraproject.org/job/eln-periodic/lastSuccessfulBuild/artifact/buildable-eln-packages.txt"
 
 # Connect to Fedora Koji instance
 # If KOJI_KEYTAB is set, it will override default kerberos authentication settings
 
 session = koji.ClientSession('https://koji.fedoraproject.org/kojihub')
 session.gssapi_login(keytab=os.getenv('KOJI_KEYTAB'))
-
 
 def configure_logging(verbose=False, output=None):
     """Configure logging
@@ -57,8 +58,8 @@ def configure_logging(verbose=False, output=None):
 
 
 def is_eln(package):
-    builds_in_ELN = session.listTagged("eln", package=package)
-    return bool(builds_in_ELN)
+    buildable_packagelist = requests.get(LAST_SUCCESSFUL_BULD, allow_redirects=True).text.splitlines()
+    return bool(package in buildable_packagelist)
 
 def rebuild_source(source, scratch=False):
     logger.debug("Rebuilding sources {0}".format(source))
