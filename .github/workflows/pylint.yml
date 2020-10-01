@@ -8,7 +8,7 @@ env:
       # E.g. if there are both error (2) and warning (4) messages, the exit code is 6.
       local exit_code=0
       find . -iname "*.py" | xargs pylint --rcfile=.pylintrc || exit_code=$?
-      if ! [ $((exit_code & 3)) -eq 0 ]; then
+      if ! [ $((exit_code & 123)) -eq 0 ]; then
         return $exit_code;
       fi;
       return 0;
