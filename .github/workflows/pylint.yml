@@ -1,8 +1,11 @@
 name: pylint
 env:
   interpreted_pylint: |
-    PYTHON_FILES=$(find . -iname "*.py")
-    pylint --rcfile=.pylintrc $PYTHON_FILES || pylint-exit --error-fail $?
+    function fail_on_fatal_or_error_only() {
+      PYTHON_FILES=$(find . -iname "*.py")
+      pylint --rcfile=.pylintrc $PYTHON_FILES || pylint-exit --error-fail $?
+    }
+    fail_on_fatal_or_error_only
 
 on:
   push:
