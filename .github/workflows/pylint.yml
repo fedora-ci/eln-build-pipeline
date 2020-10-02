@@ -1,21 +1,5 @@
 name: pylint
 
-env:
-  interpreted_pylint: |
-    function fail_on_fatal_or_error_only() {
-      # We care about fatal (1) and error (2) messages only.
-      # The exit code is a sum of numbers corresponding to the message severity level.
-      # E.g. if there are both error (2) and warning (4) messages, the exit code is 6.
-      local exit_code=0
-      PYTHON_FILES=$(find . -iname "*.py")
-      pylint --rcfile=.pylintrc $PYTHON_FILES || exit_code=$?
-      if ! [ $((exit_code & 123)) -eq 0 ]; then
-        return $exit_code;
-      fi;
-      return 0;
-    }
-    fail_on_fatal_or_error_only
-
 on:
   push:
     branches: [ master ]
@@ -34,7 +18,7 @@ jobs:
         python-version: '3.6'
 
     - name: Install dependencies
-      run: python -m pip install --upgrade pip setuptools pylint
+      run: python -m pip install --upgrade pip setuptools pylint pylint-exit
 
     - name: Run Pylint Checks
-      run: ${{ env.interpreted_pylint }}
+      run: pylint --rcfile=.pylintrc $(find . -iname "*.py") || pylint-exit --error-fail $?
