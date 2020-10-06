@@ -21,4 +21,4 @@ jobs:
       run: python -m pip install --upgrade pip setuptools pylint pylint-exit
 
     - name: Run Pylint Checks
-      run: find . -iname "*.py" | xargs pylint --rcfile=.pylintrc *.py || pylint-exit --error-fail $?
+      run: pylint --rcfile=.pylintrc *.py || pylint-exit --error-fail $?
