@@ -1,24 +1,23 @@
 #!/usr/bin/python3
 
-
+import argparse
 import logging
 import os
+import requests
+
 import sys
 from contextlib import redirect_stdout
-import requests
-import argparse
 
 import koji
 from koji_cli.lib import watch_tasks
 
-LAST_SUCCESSFUL_BULD = "https://osci-jenkins-1.ci.fedoraproject.org/job/eln-periodic/lastSuccessfulBuild/artifact/buildable-eln-packages.txt"  # pylint: disable=C0301
+LAST_SUCCESSFUL_BULD = "https://osci-jenkins-1.ci.fedoraproject.org/job/eln-periodic/lastSuccessfulBuild/artifact/buildable-eln-packages.txt"
 
 # Connect to Fedora Koji instance
 # If KOJI_KEYTAB is set, it will override default kerberos authentication settings
 
 session = koji.ClientSession('https://koji.fedoraproject.org/kojihub')
 session.gssapi_login(keytab=os.getenv('KOJI_KEYTAB'))
-
 
 def configure_logging(verbose=False, output=None):
     """Configure logging
@@ -28,17 +27,19 @@ def configure_logging(verbose=False, output=None):
     INFO-level messages to the file.
 
     Return logger object.
+
     """
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(levelname)s: %(message)s')
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
 
     if verbose:
         logger.setLevel(logging.DEBUG)
@@ -56,21 +57,12 @@ def configure_logging(verbose=False, output=None):
     return logger
 
 
-def is_eln(eln_package):
-    """Checking if a package is in the last successful build
-
-    Return boolean.
-    """
+def is_eln(package):
     buildable_packagelist = requests.get(LAST_SUCCESSFUL_BULD, allow_redirects=True).text.splitlines()
-    return bool(eln_package in buildable_packagelist)
+    return bool(package in buildable_packagelist)
 
-
-def rebuild_source(build_source, scratch=False):
-    """Rebuilding sources
-
-    Return task_id.
-    """
-    logger.debug("Rebuilding sources {0}".format(build_source))
+def rebuild_source(source, scratch=False):
+    logger.debug("Rebuilding sources {0}".format(source))
 
     opts = {}
 
@@ -79,7 +71,9 @@ def rebuild_source(build_source, scratch=False):
     if scratch:
         opts['scratch'] = True
 
-    return session.build(src=build_source, target="eln", opts=opts)
+    task_id = session.build(src=source, target="eln", opts=opts)
+
+    return task_id
 
 
 if __name__ == "__main__":
@@ -117,7 +111,7 @@ if __name__ == "__main__":
 
     if not is_eln(package):
         logger.info("{0} is not in ELN".format(package))
-        sys.exit(0)
+        exit(0)
 
     task_id = rebuild_source(source, scratch=args.scratch)
 
@@ -132,4 +126,4 @@ if __name__ == "__main__":
         with redirect_stdout(logger):
             rv = watch_tasks(session, [task_id], poll_interval=10)
 
-        sys.exit(rv)
+        exit(rv)
