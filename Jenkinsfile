@@ -4,14 +4,6 @@
 
 import org.fedoraproject.jenkins.koji.Koji
 
-def podYAML = """
-spec:
-  containers:
-  - name: koji
-    image: quay.io/bookwar/koji-client:0.0.1
-    tty: true
-"""
-
 def pipelineMetadata = [
     pipelineName: 'eln-build',
     pipelineDescription: 'Rebuild Fedora Rawhide package in the ELN Buildroot',
@@ -36,12 +28,7 @@ pipeline {
 	throttle(['eln-build'])
     }
 
-    agent {
-	kubernetes {
-	    yaml podYAML
-	    defaultContainer 'koji'
-	}
-    }
+    agent { label 'static' }
 
     parameters {
 	string(
