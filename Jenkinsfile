@@ -22,7 +22,8 @@ def kojiBuildId
 
 pipeline {
     options {
-        buildDiscarder(logRotator(daysToKeepStr: '14', artifactNumToKeepStr: '100'))
+        // Big number of archive tasks made DOS for Jenkins master
+        buildDiscarder(logRotator(daysToKeepStr: '14', numToKeepStr: '2500', artifactNumToKeepStr: '100'))
         timeout(time: 4, unit: 'HOURS')
         throttle(['eln-build'])
     }
